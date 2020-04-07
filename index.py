@@ -1,3 +1,5 @@
+import uuid
+
 from flask import Flask, redirect, render_template
 from flask_login.utils import login_user, login_required, logout_user
 from data.db_session import global_init, create_session
@@ -30,6 +32,16 @@ api.add_resource(ScheduleResource, '/api/get/schedule/<int:schedule_id>')
 api.add_resource(ScheduleListResource, '/api/get/schedule')
 api.add_resource(ScheduleCallsResource, '/api/get/schedule_calls/<int:schedule_call_id>')
 api.add_resource(ScheduleCallsListResource, '/api/get/schedule_calls')
+
+
+def hash_password(password):
+    salt = uuid.uuid4().hex
+    return hashlib.sha256(salt.encode() + password.encode()).hexdigest() + ':' + salt
+
+
+def check_password(hashed_password, user_password):
+    password, salt = hashed_password.split(':')
+    return password == hashlib.sha256(salt.encode() + user_password.encode()).hexdigest()
 
 
 @app.route('/logout')
@@ -69,7 +81,7 @@ def registration():
         user.email = form.email.data
         user.name = form.name.data
         user.surname = form.surname.data
-        user.password = hashlib.sha1((form.password.data).encode('utf-8')).digest()
+        user.password = hash_password(form.password.data)
         session.add(user)
         session.commit()
 
@@ -106,7 +118,7 @@ def login():
         session = create_session()
 
         user = session.query(Users).filter(Users.email == form.email.data).first()
-        if user and user.password == hashlib.sha1((form.password.data).encode('utf-8')).digest():
+        if user and check_password(form.password.data, user.password):
             login_user(user, remember=form.remember_me.data)
             return redirect('/')
 
