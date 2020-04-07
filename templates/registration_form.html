@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/registration_form.css">
+</head>
+<body>
+    {% extends "base.html" %}
+    {% block content %}
+    <div id=content>
+        <h1>
+            Регистрация
+        </h1>
+        <p>
+            {{message}}
+        </p>
+        <form action="" method="post">
+            {{ form.hidden_tag() }}
+            <p id='email'>
+                Почта <br>
+                {{form.email}}
+            </p>
+            <p id='name'>
+                Имя <br>
+                {{form.name}}
+            </p>
+            <p id='surname'>
+                Фамилия <br>
+                {{form.surname}}
+            </p>
+            <p id='password'>
+                Пароль <br>
+                {{form.password}}
+            </p>
+            <p id='repeat_password'>
+                Повторите пароль <br>
+                {{form.repeat_password}}
+            </p>
+            <p id='submit'>{{form.submit(id='btn_submit')}}</p>
+        </form>
+    </div>
+    {% endblock%}
+</body>
+</html>
