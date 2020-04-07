@@ -1,45 +1,67 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/registration_form.css">
-</head>
-<body>
-    {% extends "base.html" %}
-    {% block content %}
-    <div id=content>
-        <h1>
-            Регистрация
-        </h1>
+<link rel="stylesheet" href="/static/css/registration_form.css">
+
+{% extends "base.html" %}
+{% block content %}
+<div id=content>
+    <h1 align="center">
+        Регистрация
+    </h1>
+    <p>
+        {{message}}
+    </p>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
         <p>
-            {{message}}
+            {{ form.email.label }}<br>
+            {{ form.email(class="form-control", type="email") }}<br>
+            {% for error in form.email.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
         </p>
-        <form action="" method="post">
-            {{ form.hidden_tag() }}
-            <p id='email'>
-                Почта <br>
-                {{form.email}}
-            </p>
-            <p id='name'>
-                Имя <br>
-                {{form.name}}
-            </p>
-            <p id='surname'>
-                Фамилия <br>
-                {{form.surname}}
-            </p>
-            <p id='password'>
-                Пароль <br>
-                {{form.password}}
-            </p>
-            <p id='repeat_password'>
-                Повторите пароль <br>
-                {{form.repeat_password}}
-            </p>
-            <p id='submit'>{{form.submit(id='btn_submit')}}</p>
-        </form>
-    </div>
-    {% endblock%}
-</body>
-</html>
+        <p>
+            Имя<br>
+            {{ form.name(class="form-control") }}<br>
+            {% for error in form.name.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+        </p>
+        <p>
+            Фамилия<br>
+            {{ form.surname(class="form-control") }}<br>
+            {% for error in form.surname.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+        </p>
+        <p>
+            Пароль<br>
+            {{ form.password(class="form-control", type="password") }}<br>
+            {% for error in form.password.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+        </p>
+        <p>
+            Повторите пароль<br>
+            {{ form.repeat_password(class="form-control", type="password") }}<br>
+            {%if error_pas%}
+        <div class="alert alert-danger" role="alert">
+            {{ error_pas }}
+        </div>
+        {%endif%}
+        {% for error in form.repeat_password.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+        </p>
+        <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+    </form>
+</div>
+{% endblock%}

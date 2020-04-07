@@ -91,7 +91,7 @@ def registration():
     form = RegistrationForm()
     form.hidden_tag()
     if form.validate_on_submit():
-        if check_registration(form) != True:
+        if not check_registration(form):
             return render_template('registration_form.html', form=form, message=check_registration(form))
         add_data(form)
         return redirect('/')
