@@ -1,33 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/login_form.css">
-</head>
-<body>
-    {% extends "base.html" %}
-    {% block content %}
-    
-    <div id="content">
+<link rel="stylesheet" href="/static/css/login_form.css">
+
+{% extends "base.html" %}
+{% block content %}
+
+<div id="content">
+    <h1 align="center">
+        Авторизация
+    </h1>
+    <p>
         {{message}}
-        <form action="" method="post">
-            {{form.hidden_tag()}}
-            <p id='email'>Email <br>
-                {{form.email}}
-            </p>
-            <p id='password'>Пароль <br>
-                {{form.password}}
-            </p>
-            <p id='submit'>
-                {{form.submit(id='btn_submit')}}
-            </p>
-            <p id='remember_me'>
-                Запомнить меня
-                {{form.remember_me}}
-            </p>
-        </form>
-    </div>
-    {% endblock %}
-</body>
-</html>
+    </p>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.email.label }}<br>
+            {{ form.email(class="form-control", type="email") }}<br>
+            {% for error in form.email.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+        </p>
+        <p>
+            Пароль<br>
+            {{ form.password(class="form-control", type="password") }}<br>
+            {% for error in form.password.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+        </p>
+        <p>{{ form.remember_me() }} Запомнить меня</p>
+        <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+    </form>
+</div>
+{% endblock %}
