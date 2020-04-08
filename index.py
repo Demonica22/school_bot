@@ -118,7 +118,7 @@ def login():
         session = create_session()
 
         user = session.query(Users).filter(Users.email == form.email.data).first()
-        if user and check_password(form.password.data, user.password):
+        if user and check_password(user.password, form.password.data):
             login_user(user, remember=form.remember_me.data)
             return redirect('/')
 
