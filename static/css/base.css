@@ -1,0 +1,18 @@
+#navbarr{
+  display: inline;
+}
+
+.open{
+  display: inline-block;
+  position: fixed;
+  margin-top: 30px;
+  padding: 10px 20px;
+  background-color: #E7E7E7;
+}
+
+.nav_menu{
+  background-color: #F8F9FA;
+  display: inline-block;
+  top: 170px;
+  position: fixed;
+}

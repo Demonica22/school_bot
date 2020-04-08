@@ -7,6 +7,8 @@
           href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
           crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/css/base.css">
+    
     <title>{{title}}</title>
 </head>
 <body>
@@ -16,6 +18,31 @@
             <a href="/logout">Выход из аккаунта</a>
         {% endif %}
     </header>
+    <div>
+        <button class="open">☰</button>
+        <nav class="nav_menu" id="content_nav_menu">
+            <h2>
+                Меню
+            </h3>
+            <p>
+                <a href="">Новости</a>
+            </p>
+            <p>
+                <a href="">Раписание уроков</a>
+            </p>
+            <p>
+                <a href="">Раписание звонков</a>
+            </p>
+        </nav>
+    </div>
+    <script>
+        var popup = document.querySelector('.nav_menu');
+        var open = document.querySelector('.open');
+        popup.style.display = 'none';
+
+        open.addEventListener('click', function() {
+        if(popup.style.display == 'none') popup.style.display = 'inline-block';
+        else popup.style.display = 'none'});</script>
     {% block content %}
     {% endblock %}
 </body>
