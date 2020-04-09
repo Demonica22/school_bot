@@ -1,0 +1,29 @@
+{%extends "base.html"%}
+{%block content%}
+<link rel="stylesheet" href="/static/css/add_news_form.css">
+<div id="content">
+    <h1 align="center">
+        Добавление новости
+    </h1>
+    <p>
+        {{message}}
+    </p>
+    <form action="" method="post">
+        {{form.hidden_tag()}}
+        <p>
+            {{form.title(class="form-control")}}
+            
+        </p>
+        <p>
+            {{form.data(class="form-control", id="data")}}
+        </p>
+        <p>
+            {{form.files(class="form-control", enctype="multipart/form-data")}}
+        </p>
+        <p>
+            {{ form.submit(type="submit", class="btn btn-primary") }}
+        </p>
+    </form>
+</div>
+
+{%endblock%}

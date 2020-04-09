@@ -8,6 +8,7 @@ class News(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'news'
     id = sqlalchemy.Column(Integer, autoincrement=True, primary_key=True)
     data = Column(String)
+    title = Column(String)
     images = Column(String)
     videos = Column(String)
     user_id = Column(Integer, sqlalchemy.ForeignKey("users.id"))

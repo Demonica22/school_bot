@@ -1,17 +1,22 @@
 import uuid
 
-from flask import Flask, redirect, render_template
+from flask import Flask, redirect, render_template, request
+from werkzeug.utils import secure_filename
 from flask_login.utils import login_user, login_required, logout_user
 from data.db_session import global_init, create_session
 from data.users import Users
 from flask_login import LoginManager, current_user
 from forms.registration_form import RegistrationForm
 from forms.login_form import LoginForm
+from forms.add_news_form import AddNewsForm
 import hashlib
 from flask_restful import Api
 from api.news_resource import NewsResource, NewsListResource
 from api.schedule_resource import ScheduleResource, ScheduleListResource
 from api.schedule_calls_resource import ScheduleCallsResource, ScheduleCallsListResource
+from data.news import News
+import datetime
+import os
 
 app = Flask(__name__)
 api = Api(app)
@@ -21,7 +26,8 @@ app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = '/login'
-
+app.config['UPLOAD_FOLDER'] = 'static/images'
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 '''
 api
 '''
@@ -127,11 +133,28 @@ def login():
     return render_template('login_form.html', form=form)
 
 
-@app.route('/main_page')
-def main_page():
-    session = create_session()
-    session.query()
-    return ''
+@app.route('/news/add', methods=['GET', 'POST'])
+def add_news():
+    def add_data(form):
+        session = create_session()
+        news = News()
+        news.title = form.title.data
+        news.data = form.data.data
+        news.date_post = datetime.datetime.now()
+        session.add(news)
+        session.commit()
+
+    if not current_user.is_authenticated:
+        return redirect('/login')
+
+    if current_user.roles.name != 'admin':
+        return redirect('/')
+
+    form = AddNewsForm()
+    form.hidden_tag()
+    if form.validate_on_submit():
+        add_data(form)
+    return render_template('add_news_form.html', form=form)
 
 
 if __name__ == '__main__':

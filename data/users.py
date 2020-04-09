@@ -10,6 +10,6 @@ class Users(SqlAlchemyBase, UserMixin):
     email = sqlalchemy.Column(sqlalchemy.String)
     name = sqlalchemy.Column(sqlalchemy.String)
     surname = sqlalchemy.Column(sqlalchemy.String)
-    role_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("roles.id"), default=0)
+    role_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("roles.id"), default=1)
     password = sqlalchemy.Column(sqlalchemy.String)
     roles = orm.relation('Roles')

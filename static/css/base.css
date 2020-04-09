@@ -13,6 +13,17 @@
 .nav_menu{
   background-color: #F8F9FA;
   display: inline-block;
-  top: 170px;
+  top: 20%;
   position: fixed;
+}
+
+#logout{
+  color: white;
+  position: relative;
+  display: inline-block;
+  padding: 2px;
+  border-radius: 12px;
+  background-color: #f44336;
+  margin-left: 90%;
+  text-decoration: underline
 }
