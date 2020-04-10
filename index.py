@@ -192,6 +192,12 @@ def add_schedule():
 
         return errors
 
+    if not current_user.is_authenticated:
+        return redirect('/login')
+
+    if current_user.roles.name != 'admin':
+        return redirect('/schedule/lessons')
+
 
     if request.method == 'POST':
         errors = check()
