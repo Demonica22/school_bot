@@ -1,0 +1,30 @@
+#content{
+    margin-left: 40%;
+    margin-right: 30%;
+}
+
+
+#number_grade{
+    display: inline-block;
+    width: 45px;
+    height: 45px;
+}
+
+
+#letter_grade{
+    display: inline-block;
+    width: 45px;
+    height: 45px;
+}
+
+h1{
+    align-content: center;
+}
+
+h2{
+    align-content: center;
+}
+
+#schedule{
+    height: 300px;
+}

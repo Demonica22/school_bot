@@ -15,6 +15,8 @@ from api.news_resource import NewsResource, NewsListResource
 from api.schedule_resource import ScheduleResource, ScheduleListResource
 from api.schedule_calls_resource import ScheduleCallsResource, ScheduleCallsListResource
 from data.news import News
+from data.schedule import Schedule
+from wtforms.validators import DataRequired
 import datetime
 import os
 
@@ -155,6 +157,50 @@ def add_news():
     if form.validate_on_submit():
         add_data(form)
     return render_template('add_news_form.html', form=form)
+
+
+@app.route('/schedule/lessons/add', methods=['GET', 'POST'])
+def add_schedule():
+    def add_data():
+        session = create_session()
+        schedule = Schedule()
+        schedule.grade = request.form['number_grade'] + request.form['letter_grade'].lower()
+        schedule.weekday = request.form['weekday']
+        schedule.schedule = ''.join(request.form['schedule'].split('\r'))
+        session.add(schedule)
+        session.commit()
+
+    def check():
+        errors = dict()
+        message = 'Форма не заполнена'
+        if request.form['number_grade'] == "":
+            errors['number_grade'] = message
+
+        if request.form['letter_grade'] == "":
+            errors['letter_grade'] = message
+
+        if request.form['schedule'] == "":
+            errors['schedule'] = message
+
+
+        if len(request.form['letter_grade']) > 1:
+            errors['letter_grade'] = 'В этом поле должен быть только один символ'
+        if not request.form['letter_grade'].isalpha():
+            errors['letter_grade'] = 'В этом поле должна быть буква'
+        if not request.form['number_grade'].isdigit():
+            errors['number_grade'] = 'В этом поле должно быть число'
+
+        return errors
+
+
+    if request.method == 'POST':
+        errors = check()
+        if not errors:
+            add_data()
+            return redirect('/schedule/lessons')
+        return render_template('add_schedule_form.html', errors=errors)
+
+    return render_template('add_schedule_form.html', errors=None)
 
 
 if __name__ == '__main__':

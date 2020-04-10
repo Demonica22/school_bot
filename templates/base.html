@@ -34,15 +34,16 @@
                 <a href="">Раписание звонков</a>
             </p>
         </nav>
+        <script>
+            var popup = document.querySelector('.nav_menu');
+            var open = document.querySelector('.open');
+            popup.style.display = 'none';
+    
+            open.addEventListener('click', function() {
+            if(popup.style.display == 'none') popup.style.display = 'inline-block';
+            else popup.style.display = 'none'});</script>
     </div>
-    <script>
-        var popup = document.querySelector('.nav_menu');
-        var open = document.querySelector('.open');
-        popup.style.display = 'none';
 
-        open.addEventListener('click', function() {
-        if(popup.style.display == 'none') popup.style.display = 'inline-block';
-        else popup.style.display = 'none'});</script>
     {% block content %}
     {% endblock %}
 </body>

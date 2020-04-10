@@ -1,0 +1,74 @@
+<head>
+    <script src="/static/js/validate_add_schedule_form.js"></script>
+</head>
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="/static/css/add_schedule_form.css">
+<div id="content">
+    <h1>Добавление расписания</h1>
+    <form action="" method="post">
+        <p>
+            <h2 id="title_grade">Выберите класс</h2>
+            <input id="number_grade" class="form-control" type="text" name="number_grade">
+            <input id="letter_grade" type="text" name="letter_grade" class="form-control">
+        </p>
+        {% if errors["number_grade"] %}
+            <div class="alert alert-danger" role="alert">
+                {{ errors["number_grade"] }}
+            </div>
+        {% endif%}
+        {% if errors["letter_grade"] %}
+                <div class="alert alert-danger" role="alert">
+                    {{ errors["letter_grade"] }}
+                </div>
+        {% endif%}
+        <p>
+            <h2>День недели</h2>
+            <select id="weekday" class="form-control" type="text" name="weekday">
+                <option>понедельник</option>
+                <option>вторник</option> 
+                <option>среда</option>
+                <option>четверг</option>
+                <option>пятница</option>
+                <option>суббота</option>
+                <option>воскресенье</option>
+            </select>
+ 
+        </p>
+        <p>
+            <h2>Расписание</h2>
+            <textarea id="schedule" class="form-control" name="schedule" wrap="soft"></textarea>
+            {% if errors["schedule"]%}
+                <div class="alert alert-danger" role="alert">
+                    {{ errors["schedule"] }}
+                </div>
+            {% endif %}
+            <p>
+                <input type="submit" class="btn btn-primary">
+            </p>
+        </p>
+    </form>
+    <button class="open_menu" onclick="open_schedule_menu()">
+        <h3>
+            Пример написания расписания
+        </h3>
+    </button>
+    <div class="menu">
+        <p>
+            математика <br>
+            русский
+        </p>
+    </div>
+    <script>
+        function open_schedule_menu(){
+        var popup = document.querySelector('.menu');
+        var open = document.querySelector('.open_menu');
+        popup.style.display = 'none';
+    
+        open.addEventListener('click', function() {
+        if(popup.style.display == 'none') popup.style.display = 'inline-block';
+        else popup.style.display = 'none'});}
+        </script>
+</div>
+
+{% endblock %}
