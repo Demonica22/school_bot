@@ -25,13 +25,21 @@
                 Меню
             </h3>
             <p>
-                <a href="">Новости</a>
+                <a href="/news">Новости</a>
             </p>
             <p>
-                <a href="">Раписание уроков</a>
+                <a href="/shedule/lessons">Раписание уроков</a>
             </p>
+            {% if current_user.is_authenticated and current_user.roles.name == "admin" %}
+                <p>
+                    <a href="/schedule/lessons/add">Добавление расписания уроков</a>
+                </p>
+                <p>
+                    <a href="/news/add">Добавление новостей </a>
+                </p>
+            {% endif %}
             <p>
-                <a href="">Раписание звонков</a>
+                <a href="/shedule/calls">Раписание звонков</a>
             </p>
         </nav>
         <script>
