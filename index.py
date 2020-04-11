@@ -42,6 +42,8 @@ api.add_resource(ScheduleCallsResource, '/api/get/schedule_calls/<int:schedule_c
 api.add_resource(ScheduleCallsListResource, '/api/get/schedule_calls')
 
 
+
+
 def hash_password(password):
     salt = uuid.uuid4().hex
     return hashlib.sha256(salt.encode() + password.encode()).hexdigest() + ':' + salt
@@ -163,11 +165,17 @@ def add_news():
 def add_schedule():
     def add_data():
         session = create_session()
-        schedule = Schedule()
+        schedule = session.query(Schedule).filter(Schedule.weekday == request.form['weekday'],
+        Schedule.grade == (request.form['number_grade'] + request.form['letter_grade'])).first()
+        flag = True
+        if not schedule:
+            flag = False
+            schedule = Schedule()
         schedule.grade = request.form['number_grade'] + request.form['letter_grade'].lower()
         schedule.weekday = request.form['weekday']
         schedule.schedule = ''.join(request.form['schedule'].split('\r'))
-        session.add(schedule)
+        if not flag:
+            session.add(schedule)
         session.commit()
 
     def check():
@@ -208,6 +216,36 @@ def add_schedule():
 
     return render_template('add_schedule_form.html', errors=None)
 
+@app.route('/schedule/lessons', methods=['GET', 'POST'])
+def menu_schedule_lessons():
+    def sort_grades():
+        data = session.query(Schedule).all()
+        list_grades = set()
+        for el in data:
+            list_grades.add(el.grade)
+        list_grades = list(map(lambda x: (int(x[:-1]), x[-1]), list_grades))
+        list_grades.sort(key=lambda x: x[1], reverse=True)
+        list_grades.sort(key=lambda x: x[0])
+        list_grades.reverse()
+        list_grades = list(map(lambda x: str(x[0]) + x[1], list_grades))
+        return list_grades
+
+    session = create_session()
+    if request.method == 'POST':
+        return redirect(f'/schedule/lessons/{request.form["select_grade"]}')
+
+    return  render_template('menu_schedule_lessons.html', list_grades=sort_grades())
+
+
+@app.route('/schedule/lessons/<string:grade>')
+def schedule_lessons(grade):
+    LIST_WEEKDAYS = [
+        'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота', 'воскресенье'
+    ]
+    session = create_session()
+    data = session.query(Schedule).filter(Schedule.grade == grade).all()
+    data.sort(key=lambda x: LIST_WEEKDAYS.index(x.weekday))
+    return render_template('schedule_lessons.html', grade=grade, data=data)
 
 if __name__ == '__main__':
     '''

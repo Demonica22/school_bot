@@ -23,12 +23,20 @@
         <nav class="nav_menu" id="content_nav_menu">
             <h2>
                 Меню
-            </h3>
+            </h2>
+            {% if not current_user.is_authenticated %}
+                <p>
+                    <a href="/login">Войти в аккаунт</a>
+                </p>
+                <p>
+                    <a href="/registration">Зарегистрироваться</a>
+                </p>
+            {% endif %}
             <p>
                 <a href="/news">Новости</a>
             </p>
             <p>
-                <a href="/shedule/lessons">Раписание уроков</a>
+                <a href="/schedule/lessons">Раписание уроков</a>
             </p>
             {% if current_user.is_authenticated and current_user.roles.name == "admin" %}
                 <p>
@@ -39,7 +47,7 @@
                 </p>
             {% endif %}
             <p>
-                <a href="/shedule/calls">Раписание звонков</a>
+                <a href="/schedule/calls">Раписание звонков</a>
             </p>
         </nav>
         <script>

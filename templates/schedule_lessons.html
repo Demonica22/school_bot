@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="/static/css/schedule_lessons.css">
+<div id="content">
+    <h1 id="title">Расписание {{grade}}</h1>
+    {% for el in data %}
+        <p>
+            <h2 id="weekday">{{el.weekday}}</h2>
+            <table border="2px black" align="center">
+                {% for lesson in el.schedule.split('\n') %}
+                    <tr><td id=lesson align="center">{{lesson}}</td></tr>
+                {% endfor %}
+            </table>
+        </p>
+    {% endfor %}
+</div>
+{% endblock %}
