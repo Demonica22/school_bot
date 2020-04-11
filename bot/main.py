@@ -29,14 +29,18 @@ for event in longpoll.listen():
                                        "color": "negative"}
                                       ]]}))
             elif eval(event.object["message"]["payload"])["command"] == "schedule":
+                # Начало обработки запроса на получение расписания уроков
                 vk.messages.send(user_id=event.obj.message['from_id'],
                                  message="Введите свой класс с буквой через пробел(Например: 7 А)",
                                  random_id=random.randint(0, 2 ** 64))
                 action = "schedule"
             elif eval(event.object["message"]["payload"])["command"] == "schedule_calls":
+                # Отправка расписания звонков
                 all_schedules = get('http://127.0.0.1:5000/api/get/schedule_calls').json()["schedule calls"]
                 needed = list(
-                    filter(lambda schedule: schedule["weekday"] == time.strftime("%A", time.strptime(time.asctime())).lower(), all_schedules))[0]
+                    filter(lambda schedule: schedule["weekday"] == time.strftime("%A",
+                                                                                 time.strptime(time.asctime())).lower(),
+                           all_schedules))[0]
                 message = ""
                 for i in range(1, len(needed["schedule"].split(", ")) + 1):
                     message += f"{i}. {needed['schedule'].split(', ')[i - 1]}\n"
@@ -45,30 +49,24 @@ for event in longpoll.listen():
                                  random_id=random.randint(0, 2 ** 64))
         else:
             message = event.object["message"]["text"].strip("\n").strip().split()
-            if len(message) != 2:
+            if len(message) != 2 or int(message[0]) > 11 or int(message[0]) < 1:
                 vk.messages.send(user_id=event.obj.message['from_id'],
                                  message="Данные некорректны, введите свой класс еще раз",
                                  random_id=random.randint(0, 2 ** 64))
             else:
-                if 1 <= int(message[0]) <= 11:
-                    weekday = time.strftime("%A", time.strptime(time.asctime()))
-                    if action == "schedule":
-                        all_schedules = get('http://127.0.0.1:5000/api/get/schedule').json()["schedule"]
-                        if "".join(message).lower() in [item["grade"].lower() for item in all_schedules]:
-                            needed = list(
-                                filter(lambda schedule: schedule["weekday"] == weekday.lower() and schedule[
-                                    "grade"] == "".join(message).lower(),
-                                       all_schedules))[0]
-                            message = ""
-                            for i in range(1, len(needed["schedule"].split(", ")) + 1):
-                                message += f"{i}. {needed['schedule'].split(', ')[i - 1]}\n"
-                    else:
-                        message = "Данные некорректны или такого класса нет, введите его еще раз"
+                weekday = time.strftime("%A", time.strptime(time.asctime()))
+                if action == "schedule":
+                    # Отправка расписания уроков
 
-                    vk.messages.send(user_id=event.obj.message['from_id'],
-                                     message=message,
-                                     random_id=random.randint(0, 2 ** 64))
-                else:
-                    vk.messages.send(user_id=event.obj.message['from_id'],
-                                     message="Данные некорректны, введите свой класс еще раз",
-                                     random_id=random.randint(0, 2 ** 64))
+                    all_schedules = get('http://127.0.0.1:5000/api/get/schedule').json()["schedule"]
+                    if "".join(message).lower() in [item["grade"].lower() for item in all_schedules]:
+                        needed = list(
+                            filter(lambda schedule: schedule["weekday"] == weekday.lower() and schedule[
+                                "grade"] == "".join(message).lower(),
+                                   all_schedules))[0]
+                        message = ""
+                        for i in range(1, len(needed["schedule"].split(", ")) + 1):
+                            message += f"{i}. {needed['schedule'].split(', ')[i - 1]}\n"
+                vk.messages.send(user_id=event.obj.message['from_id'],
+                                 message=message,
+                                 random_id=random.randint(0, 2 ** 64))
