@@ -30,16 +30,21 @@ for event in longpoll.listen():
                                       ]]}))
             elif eval(event.object["message"]["payload"])["command"] == "schedule":
                 vk.messages.send(user_id=event.obj.message['from_id'],
-                                 message="Введите свой класс (Например: 7А)",
+                                 message="Введите свой класс с буквой через пробел(Например: 7 А)",
                                  random_id=random.randint(0, 2 ** 64))
                 action = "schedule"
             elif eval(event.object["message"]["payload"])["command"] == "schedule_calls":
+                all_schedules = get('http://127.0.0.1:5000/api/get/schedule_calls').json()["schedule calls"]
+                needed = list(
+                    filter(lambda schedule: schedule["weekday"] == time.strftime("%A", time.strptime(time.asctime())).lower(), all_schedules))[0]
+                message = ""
+                for i in range(1, len(needed["schedule"].split(", ")) + 1):
+                    message += f"{i}. {needed['schedule'].split(', ')[i - 1]}\n"
                 vk.messages.send(user_id=event.obj.message['from_id'],
-                                 message="Введите свой класс (Например: 7А)",
+                                 message=message,
                                  random_id=random.randint(0, 2 ** 64))
-                action = "schedule_calls"
         else:
-            message = event.object["message"]["text"].strip("\n").strip()
+            message = event.object["message"]["text"].strip("\n").strip().split()
             if len(message) != 2:
                 vk.messages.send(user_id=event.obj.message['from_id'],
                                  message="Данные некорректны, введите свой класс еще раз",
@@ -49,21 +54,14 @@ for event in longpoll.listen():
                     weekday = time.strftime("%A", time.strptime(time.asctime()))
                     if action == "schedule":
                         all_schedules = get('http://127.0.0.1:5000/api/get/schedule').json()["schedule"]
-                        if message.lower() in [item["grade"].lower() for item in all_schedules]:
+                        if "".join(message).lower() in [item["grade"].lower() for item in all_schedules]:
                             needed = list(
                                 filter(lambda schedule: schedule["weekday"] == weekday.lower() and schedule[
-                                    "grade"] == message.upper(),
+                                    "grade"] == "".join(message).lower(),
                                        all_schedules))[0]
                             message = ""
                             for i in range(1, len(needed["schedule"].split(", ")) + 1):
                                 message += f"{i}. {needed['schedule'].split(', ')[i - 1]}\n"
-                    elif action == "schedule_calls":
-                        all_schedules = get('http://127.0.0.1:5000/api/get/schedule_calls').json()["schedule calls"]
-                        needed = list(
-                            filter(lambda schedule: schedule["weekday"] == weekday.lower(), all_schedules))[0]
-                        message = ""
-                        for i in range(1, len(needed["schedule"].split(", ")) + 1):
-                            message += f"{i}. {needed['schedule'].split(', ')[i - 1]}\n"
                     else:
                         message = "Данные некорректны или такого класса нет, введите его еще раз"
 
