@@ -163,8 +163,8 @@ def add_news():
 
 @app.route('/schedule/lessons/add', methods=['GET', 'POST'])
 def add_schedule():
+    session = create_session()
     def add_data():
-        session = create_session()
         schedule = session.query(Schedule).filter(Schedule.weekday == request.form['weekday'],
         Schedule.grade == (request.form['number_grade'] + request.form['letter_grade'])).first()
         flag = True
@@ -245,7 +245,14 @@ def schedule_lessons(grade):
     session = create_session()
     data = session.query(Schedule).filter(Schedule.grade == grade).all()
     data.sort(key=lambda x: LIST_WEEKDAYS.index(x.weekday))
+
     return render_template('schedule_lessons.html', grade=grade, data=data)
+
+
+@app.route('/schedule/lessons/<string:grade>/<string:weekday>/edit', methods=['GET', 'POST'])
+def edit_schedule_lessons(grade, weekday):
+    return '123'
+
 
 if __name__ == '__main__':
     '''
