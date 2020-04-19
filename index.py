@@ -242,6 +242,8 @@ def schedule_lessons(grade):
     LIST_WEEKDAYS = [
         'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота', 'воскресенье'
     ]
+    if not current_user.is_authenticated:
+        return redirect('/login')
     session = create_session()
     data = session.query(Schedule).filter(Schedule.grade == grade).all()
     data.sort(key=lambda x: LIST_WEEKDAYS.index(x.weekday))
@@ -251,7 +253,18 @@ def schedule_lessons(grade):
 
 @app.route('/schedule/lessons/<string:grade>/<string:weekday>/edit', methods=['GET', 'POST'])
 def edit_schedule_lessons(grade, weekday):
-    return '123'
+    session = create_session()
+    schedule = session.query(Schedule).filter(Schedule.grade == grade, Schedule.weekday == weekday).first()
+
+    if request.method == 'POST':
+        if request.form['schedule'].split() == []:
+            error = {'schedule': 'Форма пуста'}
+            return render_template('edit_schedule_lessons.html', data=schedule.schedule, errors=error)
+        schedule.schedule = request.form['schedule']
+        session.commit()
+        return redirect(f'/schedule/lessons/{grade}')
+
+    return render_template('edit_schedule_lessons.html', data=schedule.schedule, errors=None)
 
 
 if __name__ == '__main__':

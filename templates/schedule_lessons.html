@@ -14,8 +14,10 @@
             </table>
             {{ current_user.is_authenticated }} <br>
             {{ current_user.roles.name}}
-            {% if current_user.is_authenticated and current_user.roles.name == "admin" %}
-                <a href="/schedule/lessons/{{grade}}/{{el.weekday4}}/edit">Изменить</a>
+            {% if current_user.is_authenticated %}
+                {% if current_user.roles.name == "admin" %}
+                <a href="/schedule/lessons/{{grade}}/{{el.weekday}}/edit">Изменить</a>
+                {% endif %}
             {% endif %}
         </p>
     {% endfor %}
