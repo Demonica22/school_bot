@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+    <link rel="stylesheet" href="/static/css/edit_schedule_lesson.css">
+    <div id="content">
+        <h1>Изменение расписания</h1>
+        <form action="" method="post">
+            <textarea name="schedule" wrap="soft" id="schedule">{{data}}</textarea>
+            <input type="submit" class="btn btn-primary">
+        </form>
+        {% if errors['schedule'] %}
+            <p class="alert alert-danger">
+                {{errors['schedule']}}
+            </p>
+        {% endif %}
+    </div>
+{% endblock%}
