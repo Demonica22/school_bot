@@ -28,7 +28,9 @@ app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = '/login'
-app.config['UPLOAD_FOLDER'] = 'static/images'
+home_dir = os.path.expanduser("~")
+UPLOAD_FOLDER = os.path.join(home_dir, "upload")
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 '''
 api
@@ -145,6 +147,16 @@ def add_news():
         news.title = form.title.data
         news.data = form.data.data
         news.date_post = datetime.datetime.now()
+        news.files = []
+        for file in form.files.data:
+            if os.listdir('uploads') == []:
+                with open('uploads\\next_id.txt', 'w') as txt:
+                    txt.write('0')
+            id = int(open('uploads\\next_id.txt').read())
+            news.files.append(str(id))
+            open('uploads\\next_id.txt', 'w').write(str(id + 1))
+            file.save(f'uploads\\{id}.{file.filename.split(".")[-1]}')
+        news.files = ';'.join(news.files)
         session.add(news)
         session.commit()
 

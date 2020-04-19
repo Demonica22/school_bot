@@ -8,7 +8,7 @@
     <p>
         {{message}}
     </p>
-    <form action="" method="post">
+    <form action="" method="post" enctype="multipart/form-data">
         {{form.hidden_tag()}}
         <p>
             {{form.title(class="form-control")}}
@@ -18,7 +18,7 @@
             {{form.data(class="form-control", id="data")}}
         </p>
         <p>
-            {{form.files(class="form-control", enctype="multipart/form-data")}}
+            {{form.files(class="form-control")}}
         </p>
         <p>
             {{ form.submit(type="submit", class="btn btn-primary") }}
