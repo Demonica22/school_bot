@@ -1,6 +1,6 @@
 import uuid
 
-from flask import Flask, redirect, render_template, request
+from flask import Flask, redirect, render_template, request, send_from_directory
 from werkzeug.utils import secure_filename
 from flask_login.utils import login_user, login_required, logout_user
 from data.db_session import global_init, create_session
@@ -28,10 +28,11 @@ app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = '/login'
-home_dir = os.path.expanduser("~")
-UPLOAD_FOLDER = os.path.join(home_dir, "upload")
+home_dir = os.path.abspath(os.path.dirname(__file__))
+UPLOAD_FOLDER = os.path.join(home_dir, "uploads")
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+IMAGES = {'png', 'jpg', 'jpeg', 'gif'}
+VIDEOS = {'webm', 'mp3', 'mp4'}
 '''
 api
 '''
@@ -42,8 +43,6 @@ api.add_resource(ScheduleResource, '/api/get/schedule/<int:schedule_id>')
 api.add_resource(ScheduleListResource, '/api/get/schedule')
 api.add_resource(ScheduleCallsResource, '/api/get/schedule_calls/<int:schedule_call_id>')
 api.add_resource(ScheduleCallsListResource, '/api/get/schedule_calls')
-
-
 
 
 def hash_password(password):
@@ -139,27 +138,34 @@ def login():
     return render_template('login_form.html', form=form)
 
 
+def add_data(form, news):
+    '''используется для добавления данных новостей в базу'''
+    news.title = form.title.data
+    news.data = form.data.data
+    news.date_post = datetime.datetime.now()
+
+    if not form.files.data[0].__nonzero__():
+        return news
+
+    # if not form.files.data[0].content_type == 'application/octet-stream':
+    #     return news
+
+    news.files = []
+
+    for file in form.files.data:
+        if os.listdir('uploads') == []:
+            with open('uploads\\next_id.txt', 'w') as txt:
+                txt.write('0')
+        id = int(open('uploads\\next_id.txt').read())
+        news.files.append(f'{id}.{file.filename.split(".")[-1]}')
+        open('uploads\\next_id.txt', 'w').write(str(id + 1))
+        file.save(f'uploads\\{id}.{file.filename.split(".")[-1]}')
+    news.files = ';'.join(news.files)
+    return news
+
+
 @app.route('/news/add', methods=['GET', 'POST'])
 def add_news():
-    def add_data(form):
-        session = create_session()
-        news = News()
-        news.title = form.title.data
-        news.data = form.data.data
-        news.date_post = datetime.datetime.now()
-        news.files = []
-        for file in form.files.data:
-            if os.listdir('uploads') == []:
-                with open('uploads\\next_id.txt', 'w') as txt:
-                    txt.write('0')
-            id = int(open('uploads\\next_id.txt').read())
-            news.files.append(str(id))
-            open('uploads\\next_id.txt', 'w').write(str(id + 1))
-            file.save(f'uploads\\{id}.{file.filename.split(".")[-1]}')
-        news.files = ';'.join(news.files)
-        session.add(news)
-        session.commit()
-
     if not current_user.is_authenticated:
         return redirect('/login')
 
@@ -169,16 +175,64 @@ def add_news():
     form = AddNewsForm()
     form.hidden_tag()
     if form.validate_on_submit():
-        add_data(form)
+        session = create_session()
+        news = add_data(form, News())
+        session.add(news)
+        session.commit()
+
     return render_template('add_news_form.html', form=form)
+
+
+@app.route('/news/edit/<int:id>', methods=['GET', 'POST'])
+def edit_news(id):
+    if not current_user.is_authenticated:
+        return redirect('/login')
+
+    if current_user.roles.name != 'admin':
+        return redirect('/')
+
+    form = AddNewsForm()
+    form.hidden_tag()
+
+    session = create_session()
+    news = session.query(News).filter(News.id == id).first()
+    form.data.data = news.data
+    files = news.files
+
+    if form.validate_on_submit():
+        news = add_data(form, news)
+        if news.files == '':
+            news.files = files
+        session.commit()
+        return redirect('/news')
+
+    return render_template('add_news_form.html', form=form, data=news.to_dict())
+
+
+@app.route('/news/delete/<int:id>')
+def delete_news(id):
+    if not current_user.is_authenticated:
+        return redirect('/login')
+
+    if current_user.roles.name != 'admin':
+        return redirect('/')
+
+    session = create_session()
+    session.query(News).filter(News.id == id).delete()
+    session.commit()
+
+    return redirect('/news')
+
 
 
 @app.route('/schedule/lessons/add', methods=['GET', 'POST'])
 def add_schedule():
     session = create_session()
+
     def add_data():
         schedule = session.query(Schedule).filter(Schedule.weekday == request.form['weekday'],
-        Schedule.grade == (request.form['number_grade'] + request.form['letter_grade'])).first()
+                                                  Schedule.grade == (request.form['number_grade'] + request.form[
+                                                      'letter_grade'])).first()
         flag = True
         if not schedule:
             flag = False
@@ -202,7 +256,6 @@ def add_schedule():
         if request.form['schedule'] == "":
             errors['schedule'] = message
 
-
         if len(request.form['letter_grade']) > 1:
             errors['letter_grade'] = 'В этом поле должен быть только один символ'
         if not request.form['letter_grade'].isalpha():
@@ -218,7 +271,6 @@ def add_schedule():
     if current_user.roles.name != 'admin':
         return redirect('/schedule/lessons')
 
-
     if request.method == 'POST':
         errors = check()
         if not errors:
@@ -227,6 +279,47 @@ def add_schedule():
         return render_template('add_schedule_form.html', errors=errors)
 
     return render_template('add_schedule_form.html', errors=None)
+
+
+@app.route('/news')
+def news():
+    session = create_session()
+    data = []
+    for el in session.query(News).all():
+        data.append(
+            {
+                'id': el.id,
+                'title': el.title,
+                'data': el.data,
+                'date': el.date_post,
+                'images': list(filter(lambda x: x.split('.')[-1] in IMAGES, el.files.split(';'))),
+                'videos': list(filter(lambda x: x.split('.')[-1] in VIDEOS, el.files.split(';'))),
+                'files': list(filter(lambda x: x.split('.')[-1] not in VIDEOS
+                                               and x.split('.')[-1] not in IMAGES, el.files.split(';')))
+            }
+        )
+    return render_template('news.html', data=data, max_index=len(data))
+
+
+@app.route('/uploads/<file>')
+def uploaded_file(file):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], file)
+
+
+@app.route('/get/image/<file>')
+def get_image(file):
+    return open(f'uploads/{file}', "rb").read()
+
+
+@app.route('/video/<file>')
+def watch_video(file):
+    return render_template('video.html', video=file)
+
+
+@app.route('/get/video/<file>')
+def get_video(file):
+    return open(f'uploads/{file}', 'rb').read()
+
 
 @app.route('/schedule/lessons', methods=['GET', 'POST'])
 def menu_schedule_lessons():
@@ -246,7 +339,7 @@ def menu_schedule_lessons():
     if request.method == 'POST':
         return redirect(f'/schedule/lessons/{request.form["select_grade"]}')
 
-    return  render_template('menu_schedule_lessons.html', list_grades=sort_grades())
+    return render_template('menu_schedule_lessons.html', list_grades=sort_grades())
 
 
 @app.route('/schedule/lessons/<string:grade>')

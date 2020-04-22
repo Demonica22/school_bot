@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="/static/css/style.css">
+
+<link rel="stylesheet" href="/static/css/style.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.8.2/css/lightbox.min.css">
+        <link rel="shortcut icon" href="https://www.rudebox.org.ua/favicon.ico"/>
+<link rel='stylesheet prefetch' href='https://www.rudebox.org.ua/demo/lessons/styles/style.css'>
+
+    <div id="content">
+        <h1>Новости</h1>
+        {%for news in data %}
+            <p><h2>
+                {{news["title"]}}
+            </h2></p>
+            <hr>
+            <p class="data">{{news["data"]}}</p>
+            <p>
+                <button id="button_investments{{loop.index}}" onclick="investments()">Показать вложения</button>
+            </p>
+            <div id="investments{{loop.index}}" style="display: none;">
+                <div class="container">
+                    <div class="row">
+                        {% for image in news["images"]%}
+                            <div class="col-lg-3 col-md-4 col-xs-6 thumb"><a class="thumbnail" href="get/image/{{image}}" data-lightbox="imgGLR" ><img class="img-responsive" border="0" height="300" src="uploads/{{image}}" width="400" /></a></div>
+                        {% endfor %}
+                        {%for video in news["videos"] %}
+                            <a href="/video/{{video}}">Видео {{loop.index}}</a>
+                        {% endfor %}
+                        {% for file in news["files"] %}
+                            <a href="{{url_for('uploaded_file', file=file)}}">Скачать {{file}}</a>
+                        {% endfor %}
+                    </div>	
+                </div>
+            </div>
+            <div>
+                {% if current_user.is_authenticated and current_user.roles.name == "admin"%}
+                    <a href="/news/edit/{{news['id']}}">Изменить</a>
+                    <a href="">Удалить</a>
+                {% endif%}
+            </div>
+        {% endfor %}
+    </div>
+
+    <script src="/static/js/lightbox-plus-jquery.js"></script>
+    
+    <script>
+        function investments(){
+            document.addEventListener("click", function(event) {
+	        var id = event.target.id;
+	        var menu = document.getElementById(id.replace("button_", ""));
+	        if (menu.style.display == 'none')
+		        menu.style.display = "block";
+	        else 
+            menu.style.display = 'none'
+        })
+        }
+    </script>
+{% endblock %}
