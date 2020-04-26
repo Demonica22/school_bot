@@ -1,0 +1,30 @@
+body {
+	font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+	font-size: 14px;
+	line-height: 1.42857143;
+	color: #333;
+	background-color: #fff;			
+}	
+.footer {
+	padding: 15px 0px 10px 0px;
+	font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+	font-size: 14px;
+	line-height: 1.42857143;
+	color: #fff;
+	background-color: #222;
+	border-color: #080808;			
+}	
+#content{
+	margin-left: 40%;
+	margin-right: 30%;
+	text-align: center;
+}
+
+.row{
+	position: relative;
+	left: -30%;
+}
+
+.data{
+	text-align: left;
+}

@@ -16,6 +16,7 @@ from api.schedule_resource import ScheduleResource, ScheduleListResource
 from api.schedule_calls_resource import ScheduleCallsResource, ScheduleCallsListResource
 from data.news import News
 from data.schedule import Schedule
+from data.schedule_calls import ScheduleCalls
 from wtforms.validators import DataRequired
 import datetime
 import os
@@ -224,7 +225,6 @@ def delete_news(id):
     return redirect('/news')
 
 
-
 @app.route('/schedule/lessons/add', methods=['GET', 'POST'])
 def add_schedule():
     session = create_session()
@@ -370,6 +370,97 @@ def edit_schedule_lessons(grade, weekday):
         return redirect(f'/schedule/lessons/{grade}')
 
     return render_template('edit_schedule_lessons.html', data=schedule.schedule, errors=None)
+
+
+@app.route('/schedule/calls')
+def schedule_calls():
+    session = create_session()
+    data = session.query(ScheduleCalls).all()
+    return render_template('schedule_calls.html', data=data)
+
+
+@app.route('/schedule/calls/add', methods=['GET', 'POST'])
+def add_schedule_calls():
+    def validate():
+        errors = {}
+        data = list(request.form.items())
+        if len(data) == 1:
+            errors['weekdays'] = 'Не выбраны дни недели'
+        if not request.form['data']:
+            errors['data'] = 'Нет расписания звонков'
+        return errors
+
+    if not current_user.is_authenticated or current_user.roles.name != 'admin':
+        return redirect('/schedule/calls')
+
+    list_weekdays = [
+        ('понедельник', 'monday'), ('вторник', 'tuesday'), ('среда', 'wednesday'), ('четверг', 'thursday'),
+        ('пятница', 'friday'), ('суббота', 'saturday'), ('воскресенье', 'sunday')
+    ]
+
+    session = create_session()
+
+    list_weekdays_english = list(map(lambda x: x[1], list_weekdays))
+    list_weekdays_rus = list(map(lambda x: x[0], list_weekdays))
+
+    if request.method == 'POST':
+        if validate():
+            return render_template('add_and_edit_schedule_calls.html', weekdays=list_weekdays, errors=validate())
+        print(list(request.form.items()))
+        for form in list(request.form.items()):
+            if form[0] in list_weekdays_english:
+                schedulecalls = session.query(ScheduleCalls).filter(
+                    ScheduleCalls.weekday == list_weekdays_rus[list_weekdays_english.index(form[0])]).first()
+                flag = False
+                if not schedulecalls:
+                    flag = True
+                    schedulecalls = ScheduleCalls()
+
+                schedulecalls.weekday = list_weekdays_rus[list_weekdays_english.index(form[0])]
+                schedulecalls.schedule = request.form['data']
+
+                if flag:
+                    session.add(schedulecalls)
+                session.commit()
+
+        return redirect('/schedule/calls')
+
+        # for weekday in list_weekdays:
+
+    return render_template('add_and_edit_schedule_calls.html', weekdays=list_weekdays, errors=None)
+
+
+@app.route('/schedule/calls/edit/<int:id>', methods=['GET', 'POST'])
+def edit_schedule_calls(id):
+    def check():
+        errors = dict()
+        if request.form['data'] == '':
+            errors['data'] = 'Нет расписания звонков'
+
+    if not current_user.is_authenticated or current_user.roles.name != 'admin':
+        return redirect('/schedule/calls')
+
+    session = create_session()
+    data = session.query(ScheduleCalls).filter(ScheduleCalls.id == id).first()
+    print(data.schedule)
+    if request.method == 'POST':
+        if check():
+            return render_template('add_and_edit_schedule_calls.html', errors=check(), data=data.schedule)
+
+        data.schedule = request.form['data']
+        session.commit()
+        return redirect('/schedule/calls')
+    return render_template('add_and_edit_schedule_calls.html', errors=None, data=data.schedule)
+
+
+@app.route('/schedule/calls/delete/<int:id>')
+def delete_schedule_calls(id):
+    if not current_user.is_authenticated or current_user.roles.name != 'admin':
+        return redirect('/schedule/calls')
+    session = create_session()
+    session.query(ScheduleCalls).filter(ScheduleCalls.id == id).delete()
+    session.commit()
+    return redirect('/schedule/calls')
 
 
 if __name__ == '__main__':

@@ -1,0 +1,19 @@
+#content{
+    position: absolute;
+    margin-left: 40%;
+    margin-right: 30%;
+}
+
+
+#data{
+    width: 300px;
+    height: 300px;
+}
+
+#weekday_menu{
+    display: none;
+}
+
+#example_draw_schedule_calls{
+    display: none;
+}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+
+<link rel="stylesheet" href="/static/css/add_and_edit_schedule_calls.css">
+<div id="content">
+    <h1>Добавление расписания звонков</h1>
+    <form action="" method='post'>
+        {% if weekdays %}
+            <button type="button" id="open_weekdays" onclick="weekdays()">Выбрать дни недели</button>
+            <div id='weekday_menu'>
+                {% for weekday in weekdays %}
+                    {{weekday[0]}}
+                    <input class="form-control" type="checkbox" name="{{weekday[1]}}">
+                {% endfor %}
+            </div>
+            <div>
+                {% if errors["weekdays"] %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ errors["weekdays"] }}
+                    </div>
+                {% endif%}
+            </div>
+            
+        {% endif %}
+
+        <div>
+            <textarea id='data' class="form-control" name="data" wrap="soft">{{data}}</textarea>
+            {% if errors["data"] %}
+                <div class="alert alert-danger" role="alert">
+                    {{ errors["data"] }}
+                </div>
+            {% endif%}
+        </div>
+        <button type="button" id="btn_example" onclick="example()">Пример написания расписания звонков</button>
+        <div id='example_draw_schedule_calls'>
+            <div>
+                9:00 - 9:45 <br>
+                10:00 - 11:00
+            </div>
+        </div>
+        <div>
+            <input class="btn btn-primary" type="submit">
+        </div>
+    </form>
+</div>
+<script>
+    function weekdays() {
+        var popup = document.getElementById('weekday_menu');
+    var open = document.getElementById('open_weekdays');
+    popup.style.display = 'none';
+
+    open.addEventListener('click', function() {
+    if(popup.style.display == 'none') popup.style.display = 'block';
+    else popup.style.display = 'none'});
+    }</script>
+
+<script>
+    function example() {
+        var popup = document.getElementById('example_draw_schedule_calls');
+    var open = document.getElementById('btn_example');
+    popup.style.display = 'none';
+
+    open.addEventListener('click', function() {
+    if(popup.style.display == 'none') popup.style.display = 'block';
+    else popup.style.display = 'none'});
+    }</script>
+{% endblock %}

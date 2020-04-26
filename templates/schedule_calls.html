@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <link rel="stylesheet" href="/static/css/schedule_calls.css">
+    <div id="content">
+        <h1>Расписание звонков</h1>
+        {% for calls in data %}
+        {{calls.weekday}}
+        <table border='1px'>
+            <tr><td>Номер урока</td><td>Звонок</td></tr>
+            {% for call in calls.schedule.split('\n') %}
+                <tr><td>{{loop.index}}</td><td>{{call}}</td></tr>
+            {% endfor %}
+            {% if current_user.is_authenticated and current_user.roles.name == 'admin' %}
+                <a href="/schedule/calls/edit/{{calls.id}}">Изменить</a>
+                <a href="/schedule/calls/delete/{{calls.id}}">Удалить</a>
+            {% endif %}
+        </table>
+        {% endfor %}
+    </div>
+{% endblock %}
