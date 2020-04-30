@@ -17,6 +17,7 @@ from api.schedule_calls_resource import ScheduleCallsResource, ScheduleCallsList
 from data.news import News
 from data.schedule import Schedule
 from data.schedule_calls import ScheduleCalls
+from data.roles import Roles
 from wtforms.validators import DataRequired
 import datetime
 import os
@@ -461,6 +462,50 @@ def delete_schedule_calls(id):
     session.query(ScheduleCalls).filter(ScheduleCalls.id == id).delete()
     session.commit()
     return redirect('/schedule/calls')
+
+
+@app.route('/users')
+def users():
+    if not current_user.is_authenticated:
+        return redirect('/login')
+
+    if current_user.roles.name != 'admin':
+        return redirect('/news')
+
+    session = create_session()
+    users = session.query(Users).all()
+    return render_template('users.html', users=users)
+
+
+@app.route('/users/edit/role/<int:id>', methods=['GET', 'POST'])
+def edit_role(id):
+    if not current_user.is_authenticated:
+        return redirect('/login')
+
+    if current_user.roles.name != 'admin':
+        return redirect('/news')
+
+    session = create_session()
+    user = session.query(Users).filter(Users.id == id).first()
+    roles = session.query(Roles).all()
+
+    if request.method == 'POST':
+        id = session.query(Roles).filter(Roles.name == request.form['select_role']).first().id
+        print(id)
+
+        user.role_id = id
+        session.commit()
+        return redirect('/users')
+
+    return render_template('roles.html', roles=roles)
+
+
+@app.route('/users/delete/<int:id>')
+def delete_user(id):
+    session = create_session()
+    session.query(Users).filter(Users.id == id).delete()
+    session.commit()
+    return redirect('/users')
 
 
 if __name__ == '__main__':
