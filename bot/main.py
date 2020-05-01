@@ -48,7 +48,7 @@ def send_weekdays():
 
 def send_menu():
     vk.messages.send(user_id=event.obj.message['from_id'],
-                     message="Здравствуйте, выберите один из предложенных вариантов дальнейшей работы",
+                     message="Выберите один из предложенных вариантов дальнейшей работы",
                      random_id=random.randint(0, 2 ** 64),
                      keyboard=json.dumps({"one_time": True, "buttons": [
                          [{"action": {"type": "text", "label": "Расписание",
@@ -63,8 +63,6 @@ def send_menu():
 
 for event in longpoll.listen():
     if event.type == VkBotEventType.MESSAGE_NEW:
-        print(event)
-        print(cur_requests)
         if "payload" in event.object["message"]:
             if eval(event.object["message"]["payload"])["command"] == "start":
                 send_menu()
@@ -77,13 +75,39 @@ for event in longpoll.listen():
                 send_weekdays()
                 cur_requests[event.obj.message['from_id']] = {"action": "schedule_calls"}
             elif eval(event.object["message"]["payload"])["command"] == "week_day":
-                if event.obj.message['from_id'] not in cur_requests:
-                    cur_requests[event.obj.message['from_id']] = {}
-                cur_requests[event.obj.message['from_id']]["weekday"] = event.object["message"]["text"].strip(
-                    "\n").strip().split()
-                vk.messages.send(user_id=event.obj.message['from_id'],
-                                 message="Введите свой класс c буквой через пробел (Например: 7 А)",
-                                 random_id=random.randint(0, 2 ** 64))
+                if cur_requests[event.obj.message['from_id']]["action"] == "schedule_calls":
+                    cur_requests[event.obj.message['from_id']]["weekday"] = event.object["message"]["text"].strip(
+                        "\n").strip().split()
+                    try:
+                        all_schedules = get('http://127.0.0.1:5000/api/get/schedule_calls').json()["schedule calls"]
+                        needed = list(
+                            filter(
+                                lambda schedule: schedule["weekday"] ==
+                                                 cur_requests[event.obj.message['from_id']][
+                                                     "weekday"][0].lower(),
+                                all_schedules))[0]
+                        message = ""
+                        for i in range(1, len(needed["schedule"].split("\n")) + 1):
+                            message += "{}. {}\n".format(i, needed['schedule'].split('\n')[i - 1])
+                        vk.messages.send(user_id=event.obj.message['from_id'],
+                                         message=message,
+                                         random_id=random.randint(0, 2 ** 64))
+                        cur_requests[event.obj.message['from_id']] = {}
+                        send_menu()
+                    except Exception as x:
+                        vk.messages.send(user_id=event.obj.message['from_id'],
+                                         message=f"Ошибка {x}\nКласс не найден или расписания не существует.",
+                                         random_id=random.randint(0, 2 ** 64))
+                        cur_requests[event.obj.message['from_id']] = {}
+                        send_menu()
+                else:
+                    if event.obj.message['from_id'] not in cur_requests:
+                        cur_requests[event.obj.message['from_id']] = {}
+                    cur_requests[event.obj.message['from_id']]["weekday"] = event.object["message"]["text"].strip(
+                        "\n").strip().split()
+                    vk.messages.send(user_id=event.obj.message['from_id'],
+                                     message="Введите свой класс c буквой через пробел (Например: 7 А)",
+                                     random_id=random.randint(0, 2 ** 64))
 
             elif eval(event.object["message"]["payload"])["command"] == "news":
                 try:
@@ -95,6 +119,7 @@ for event in longpoll.listen():
                         vk.messages.send(user_id=event.obj.message['from_id'],
                                          message=message,
                                          random_id=random.randint(0, 2 ** 64))
+                    send_menu()
                 except Exception as x:
                     vk.messages.send(user_id=event.obj.message['from_id'],
                                      message=f"Ошибка {x}\n",
@@ -106,6 +131,9 @@ for event in longpoll.listen():
         else:
             message = event.object["message"]["text"].strip("\n").strip().split()
             if event.obj.message['from_id'] in cur_requests:
+                print(cur_requests)
+                if "action" not in cur_requests[event.obj.message['from_id']]:
+                    cur_requests[event.obj.message['from_id']]["action"] = None
                 if cur_requests[event.obj.message['from_id']]["action"] == "schedule":
                     if "grade" not in cur_requests[event.obj.message['from_id']]:
                         cur_requests[event.obj.message['from_id']]["grade"] = "".join(message).lower()
@@ -115,55 +143,28 @@ for event in longpoll.listen():
                                                                                            item in all_schedules]:
                             needed = list(
                                 filter(
-                                    lambda schedule: schedule["weekday"] == cur_requests[event.obj.message['from_id']][
-                                        "weekday"].lower() and schedule[
-                                                         "grade"] == cur_requests[event.obj.message['from_id']][
-                                                         "grade"].lower(),
-                                    all_schedules))[0]
-                            message = ""
-                            for i in range(1, len(needed["schedule"].split(", ")) + 1):
-                                message += f"{i}. {needed['schedule'].split(', ')[i - 1]}\n"
-                            vk.messages.send(user_id=event.obj.message['from_id'],
-                                             message=message,
-                                             random_id=random.randint(0, 2 ** 64))
-                        else:
-                            vk.messages.send(user_id=event.obj.message['from_id'],
-                                             message="Класс не найден или расписания не существует.",
-                                             random_id=random.randint(0, 2 ** 64))
-                            send_weekdays()
-                    except Exception as x:
-                        vk.messages.send(user_id=event.obj.message['from_id'],
-                                         message=f"Ошибка {x}\nКласс не найден или расписания не существует.",
-                                         random_id=random.randint(0, 2 ** 64))
-                        send_weekdays()
-                elif cur_requests[event.obj.message['from_id']]["action"] == "schedule_calls":
-                    if "grade" not in cur_requests[event.obj.message['from_id']]:
-                        cur_requests[event.obj.message['from_id']]["grade"] = "".join(message).lower()
-                    try:
-                        all_schedules = get('http://127.0.0.1:5000/api/get/schedule_calls').json()["schedule_calls"]
-                        if cur_requests[event.obj.message['from_id']]["grade"].lower() in [item["grade"].lower() for
-                                                                                           item in all_schedules]:
-                            needed = list(
-                                filter(
-                                    lambda schedule: schedule["weekday"] ==
+                                    lambda schedule: schedule["weekday"].lower() ==
                                                      cur_requests[event.obj.message['from_id']][
-                                                         "weekday"].lower() and schedule[
+                                                         "weekday"][0].lower() and schedule[
                                                          "grade"] == cur_requests[event.obj.message['from_id']][
                                                          "grade"].lower(),
                                     all_schedules))[0]
                             message = ""
-                            for i in range(1, len(needed["schedule_calls"].split(", ")) + 1):
-                                message += f"{i}. {needed['schedule_calls'].split(', ')[i - 1]}\n"
+                            for i in range(1, len(needed["schedule"].split("\n")) + 1):
+                                message += "{}. {}\n".format(i, needed['schedule'].split('\n')[i - 1])
                             vk.messages.send(user_id=event.obj.message['from_id'],
                                              message=message,
                                              random_id=random.randint(0, 2 ** 64))
+                            send_menu()
                         else:
                             vk.messages.send(user_id=event.obj.message['from_id'],
                                              message="Класс не найден или расписания не существует.",
                                              random_id=random.randint(0, 2 ** 64))
-                            send_weekdays()
+                            cur_requests[event.obj.message['from_id']] = {}
+                            send_menu()
                     except Exception as x:
                         vk.messages.send(user_id=event.obj.message['from_id'],
                                          message=f"Ошибка {x}\nКласс не найден или расписания не существует.",
                                          random_id=random.randint(0, 2 ** 64))
-                        send_weekdays()
+                        cur_requests[event.obj.message['from_id']] = {}
+                        send_menu()

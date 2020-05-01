@@ -5,17 +5,17 @@
     <div id="content">
         <h1>Расписание звонков</h1>
         {% for calls in data %}
-        {{calls.weekday}}
         <table border='1px'>
+            <p style="margin-bottom: 0px"><b>{{calls.weekday}}</b></p>
             <tr><td>Номер урока</td><td>Звонок</td></tr>
             {% for call in calls.schedule.split('\n') %}
                 <tr><td>{{loop.index}}</td><td>{{call}}</td></tr>
             {% endfor %}
-            {% if current_user.is_authenticated and current_user.roles.name == 'admin' %}
-                <a href="/schedule/calls/edit/{{calls.id}}" id="edit">Изменить</a>
-                <a href="/schedule/calls/delete/{{calls.id}}">Удалить</a>
-            {% endif %}
         </table>
+        {% if current_user.is_authenticated and current_user.roles.name == 'admin' %}
+                <a href="/schedule/calls/edit/{{calls.id}}" id="edit" class="btn btn-primary">Изменить</a>
+                <a href="/schedule/calls/delete/{{calls.id}}" id="edit" class="btn btn-primary">Удалить</a>
+            {% endif %}
         {% endfor %}
     </div>
 {% endblock %}

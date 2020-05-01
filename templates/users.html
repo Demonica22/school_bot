@@ -1,24 +1,32 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <link rel="stylesheet" href="/static/css/users.css">
-    <div id='content'>
-        <h1>
-            Пользователи
-        </h1>
-        {% for user in users %}
-            {% if current_user.id != user.id %}
-                <table border="1">
-                    <tr><td>Имя</td><td>Фамилия</td><td>Электронная почта</td><td>Роль/td></tr>
-                    <tr><td>{{user.name}}</td><td>{{user.surname}}</td><td>{{user.email}}</td><td>{{user.roles.name}}</td></tr>
-                </table>
-                <p>
-                    <a id="edit_role" href="/users/edit/role/{{user.id}}">Изменить роль</a>
-                </p>
-                <p>
-                    <a id="delete_user" href="/users/delete/{{user.id}}">Удалить пользователя</a>
-                </p>
-            {% endif %}
-        {% endfor %}
-    </div>
+<link rel="stylesheet" href="/static/css/users.css">
+<div id='content'>
+    <h1>
+        Пользователи
+    </h1>
+    {% for user in users %}
+    <table border="1" style="margin-bottom: 10px">
+        <tr>
+            <td>Имя</td>
+            <td>Фамилия</td>
+            <td>Электронная почта</td>
+            <td>Роль
+        </tr>
+        <tr>
+            <td>{{user.name}}</td>
+            <td>{{user.surname}}</td>
+            <td>{{user.email}}</td>
+            <td>{{user.roles.name}}</td>
+        </tr>
+    </table>
+    {% if current_user.id != user.id %}
+    <p>
+        <a id="edit_role" class="btn btn-primary" href="/users/edit/role/{{user.id}}" style="margin-bottom: 10px">Изменить роль</a>
+        <a id="delete_user" class="btn btn-primary" href="/users/delete/{{user.id}}" style="margin-bottom: 10px">Удалить пользователя</a>
+    </p>
+    {% endif %}
+    {% endfor %}
+</div>
 {% endblock %}

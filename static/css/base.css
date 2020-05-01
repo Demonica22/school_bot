@@ -5,21 +5,18 @@
 .open{
   display: inline-block;
   position: fixed;
-  margin-top: 30px;
   padding: 10px 20px;
-  background-color: #E7E7E7;
 }
 
 .nav_menu{
   background-color: #F8F9FA;
   display: inline-block;
-  top: 20%;
+  top: 14%;
   position: fixed;
 }
 
 #logout{
-  position: relative;
+  position: fixed;
   display: inline-block;
-  padding: 2px;
-  margin-left: 90%;
+  right: 0.0001%;
 }

@@ -69,7 +69,7 @@ def logout():
 
 @app.route('/')
 def start():
-    return redirect('/main')
+    return redirect('/news')
 
 
 @login_manager.user_loader
@@ -181,8 +181,9 @@ def add_news():
         news = add_data(form, News())
         session.add(news)
         session.commit()
+        return redirect("/")
 
-    return render_template('add_news_form.html', form=form,data=None)
+    return render_template('add_news_form.html', form=form, data=None)
 
 
 @app.route('/news/edit/<int:id>', methods=['GET', 'POST'])
@@ -220,6 +221,10 @@ def delete_news(id):
         return redirect('/')
 
     session = create_session()
+    new = session.query(News).filter(News.id == id).first()
+    if new.files:
+        for file in new.files.split(";"):
+            os.remove(f"uploads/{file}")
     session.query(News).filter(News.id == id).delete()
     session.commit()
 
@@ -287,18 +292,31 @@ def news():
     session = create_session()
     data = []
     for el in session.query(News).all():
-        data.append(
-            {
-                'id': el.id,
-                'title': el.title,
-                'data': el.data,
-                'date': el.date_post,
-                'images': list(filter(lambda x: x.split('.')[-1] in IMAGES, el.files.split(';'))),
-                'videos': list(filter(lambda x: x.split('.')[-1] in VIDEOS, el.files.split(';'))),
-                'files': list(filter(lambda x: x.split('.')[-1] not in VIDEOS
-                                               and x.split('.')[-1] not in IMAGES, el.files.split(';')))
-            }
-        )
+        try:
+            data.append(
+                {
+                    'id': el.id,
+                    'title': el.title,
+                    'data': el.data,
+                    'date': el.date_post,
+                    'images': list(filter(lambda x: x.split('.')[-1] in IMAGES, el.files.split(';'))),
+                    'videos': list(filter(lambda x: x.split('.')[-1] in VIDEOS, el.files.split(';'))),
+                    'files': list(filter(lambda x: x.split('.')[-1] not in VIDEOS
+                                                   and x.split('.')[-1] not in IMAGES, el.files.split(';')))
+                }
+            )
+        except AttributeError:
+            data.append(
+                {
+                    'id': el.id,
+                    'title': el.title,
+                    'data': el.data,
+                    'date': el.date_post,
+                    'images': [],
+                    'videos': [],
+                    'files': []
+                }
+            )
     return render_template('news.html', data=data, max_index=len(data))
 
 
@@ -348,8 +366,6 @@ def schedule_lessons(grade):
     LIST_WEEKDAYS = [
         'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'
     ]
-    if not current_user.is_authenticated:
-        return redirect('/login')
     session = create_session()
     data = session.query(Schedule).filter(Schedule.grade == grade).all()
     data.sort(key=lambda x: LIST_WEEKDAYS.index(x.weekday))

@@ -13,17 +13,27 @@
 </head>
 <body>
     <header>
-        <h1>Video.get</h1>
+        <h1>School Bot</h1>
         {% if current_user.is_authenticated %}
-                <a id='logout' href="/logout" class="btn btn-danger">Выход из аккаунта</a>
+                <a id='logout' href="/logout" class="btn btn-danger">Выход</a>
         {% endif %}
     </header>
     <div>
-        <button class="open">☰</button>
+        <button class="open btn btn-primary">☰</button>
         <nav class="nav_menu" id="content_nav_menu">
             <h2>
                 Меню
             </h2>
+
+            <p>
+                <a href="/news">Новости</a>
+            </p>
+            <p>
+                <a href="/schedule/lessons">Раписание уроков</a>
+            </p>
+            <p>
+                <a href="/schedule/calls">Раписание звонков</a>
+            </p>
             {% if not current_user.is_authenticated %}
                 <p>
                     <a href="/login">Войти в аккаунт</a>
@@ -32,12 +42,6 @@
                     <a href="/registration">Зарегистрироваться</a>
                 </p>
             {% endif %}
-            <p>
-                <a href="/news">Новости</a>
-            </p>
-            <p>
-                <a href="/schedule/lessons">Раписание уроков</a>
-            </p>
             {% if current_user.is_authenticated and current_user.roles.name == "admin" %}
                 <p>
                     <a href="/schedule/lessons/add">Добавление расписания уроков</a>
@@ -48,10 +52,10 @@
                 <p>
                     <a href="/schedule/calls/add">Добавление расписания звонков</a>
                 </p>
-            {% endif %}
             <p>
-                <a href="/schedule/calls">Раписание звонков</a>
+                <a href="/users">Пользователи</a>
             </p>
+            {% endif %}
         </nav>
         <script>
             var popup = document.querySelector('.nav_menu');
