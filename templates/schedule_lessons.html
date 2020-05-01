@@ -14,9 +14,10 @@
             </table>
             {% if current_user.is_authenticated %}
                 {% if current_user.roles.name == "admin" %}
-                <a href="/schedule/lessons/{{grade}}/{{el.weekday}}/edit">Изменить</a>
+                <a href="/schedule/lessons/{{grade}}/{{el.weekday}}/edit" class="btn btn-primary">Изменить</a>
                 {% endif %}
             {% endif %}
+            <a href="#" onclick="history.back();return false;" class="btn btn-primary">Вернуться назад</a>
         </p>
     {% endfor %}
 </div>

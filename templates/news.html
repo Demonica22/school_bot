@@ -17,7 +17,7 @@
             <hr>
             <p class="data">{{news["data"]}}</p>
             <p>
-                <button id="button_investments{{loop.index}}" onclick="investments()">Показать вложения</button>
+                <button id="button_investments{{loop.index}}" onclick="investments()" class="btn btn-secondary">Показать вложения</button>
             </p>
             <div id="investments{{loop.index}}" style="display: none;">
                 <div class="container">
@@ -34,10 +34,10 @@
                     </div>	
                 </div>
             </div>
-            <div>
+            <div style="padding-bottom: 50px">
                 {% if current_user.is_authenticated and current_user.roles.name == "admin"%}
-                    <a href="/news/edit/{{news['id']}}">Изменить</a>
-                    <a href="">Удалить</a>
+                    <a href="/news/edit/{{news['id']}}" class="btn btn-primary">Изменить</a>
+                    <a href="" class="btn btn-primary">Удалить</a>
                 {% endif%}
             </div>
         {% endfor %}

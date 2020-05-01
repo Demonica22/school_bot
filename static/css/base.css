@@ -18,12 +18,8 @@
 }
 
 #logout{
-  color: white;
   position: relative;
   display: inline-block;
   padding: 2px;
-  border-radius: 12px;
-  background-color: #f44336;
   margin-left: 90%;
-  text-decoration: underline
 }
