@@ -6,7 +6,7 @@
     <h1>Добавление расписания звонков</h1>
     <form action="" method='post'>
         {% if weekdays %}
-            <button type="button" id="open_weekdays" onclick="weekdays()">Выбрать дни недели</button>
+            <button type="button" id="open_weekdays" onclick="weekdays()" >Выбрать дни недели</button>
             <div id='weekday_menu'>
                 {% for weekday in weekdays %}
                     {{weekday[0]}}
@@ -23,7 +23,7 @@
             
         {% endif %}
 
-        <div>
+        <div style="margin-bottom: 10px">
             <textarea id='data' class="form-control" name="data" wrap="soft">{{data}}</textarea>
             {% if errors["data"] %}
                 <div class="alert alert-danger" role="alert">
@@ -31,7 +31,7 @@
                 </div>
             {% endif%}
         </div>
-        <button type="button" id="btn_example" onclick="example()">Пример написания расписания звонков</button>
+        <button type="button" id="btn_example" onclick="example()" class="btn btn-secondary" style="margin-bottom: 10px">Пример написания расписания звонков</button>
         <div id='example_draw_schedule_calls'>
             <div>
                 9:00 - 9:45 <br>
