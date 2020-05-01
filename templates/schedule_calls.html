@@ -12,7 +12,7 @@
                 <tr><td>{{loop.index}}</td><td>{{call}}</td></tr>
             {% endfor %}
             {% if current_user.is_authenticated and current_user.roles.name == 'admin' %}
-                <a href="/schedule/calls/edit/{{calls.id}}">Изменить</a>
+                <a href="/schedule/calls/edit/{{calls.id}}" id="edit">Изменить</a>
                 <a href="/schedule/calls/delete/{{calls.id}}">Удалить</a>
             {% endif %}
         </table>

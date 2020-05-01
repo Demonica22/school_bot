@@ -12,8 +12,6 @@
                     <tr><td id=lesson align="center">{{lesson}}</td></tr>
                 {% endfor %}
             </table>
-            {{ current_user.is_authenticated }} <br>
-            {{ current_user.roles.name}}
             {% if current_user.is_authenticated %}
                 {% if current_user.roles.name == "admin" %}
                 <a href="/schedule/lessons/{{grade}}/{{el.weekday}}/edit">Изменить</a>

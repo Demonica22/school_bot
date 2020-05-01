@@ -182,7 +182,7 @@ def add_news():
         session.add(news)
         session.commit()
 
-    return render_template('add_news_form.html', form=form)
+    return render_template('add_news_form.html', form=form,data=None)
 
 
 @app.route('/news/edit/<int:id>', methods=['GET', 'POST'])
@@ -346,7 +346,7 @@ def menu_schedule_lessons():
 @app.route('/schedule/lessons/<string:grade>')
 def schedule_lessons(grade):
     LIST_WEEKDAYS = [
-        'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота', 'воскресенье'
+        'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'
     ]
     if not current_user.is_authenticated:
         return redirect('/login')
@@ -396,7 +396,7 @@ def add_schedule_calls():
 
     list_weekdays = [
         ('понедельник', 'monday'), ('вторник', 'tuesday'), ('среда', 'wednesday'), ('четверг', 'thursday'),
-        ('пятница', 'friday'), ('суббота', 'saturday'), ('воскресенье', 'sunday')
+        ('пятница', 'friday'), ('суббота', 'saturday')
     ]
 
     session = create_session()
