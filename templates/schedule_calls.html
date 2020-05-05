@@ -6,7 +6,7 @@
         <h1>Расписание звонков</h1>
         {% for calls in data %}
         <table border='1px'>
-            <p style="margin-bottom: 0px"><b>{{calls.weekday}}</b></p>
+            <p style="margin-bottom: 0px"><b>{{calls.weekday.title()}}</b></p>
             <tr><td>Номер урока</td><td>Звонок</td></tr>
             {% for call in calls.schedule.split('\n') %}
                 <tr><td>{{loop.index}}</td><td>{{call}}</td></tr>

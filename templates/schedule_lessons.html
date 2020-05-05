@@ -6,7 +6,7 @@
     <h1 id="title">Расписание {{grade}}</h1>
     {% for el in data %}
         <p>
-            <h2 id="weekday">{{el.weekday}}</h2>
+            <h2 id="weekday">{{el.weekday.title()}}</h2>
             <table border="2px black" align="center">
                 {% for lesson in el.schedule.split('\n') %}
                     <tr><td id=lesson align="center">{{lesson}}</td></tr>

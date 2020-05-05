@@ -26,13 +26,13 @@
             <h2>День недели</h2>
             <select id="weekday" class="form-control" type="text" name="weekday">
                 <option>понедельник</option>
-                <option>вторник</option> 
+                <option>вторник</option>
                 <option>среда</option>
                 <option>четверг</option>
                 <option>пятница</option>
                 <option>суббота</option>
             </select>
- 
+
         </p>
         <p>
             <h2>Расписание</h2>
@@ -52,8 +52,9 @@
     </button>
     <div class="menu">
         <p>
-            математика <br>
-            русский
+            Математика <br>
+            Русский <br>
+            Английский язык
         </p>
     </div>
     <script>
@@ -61,7 +62,7 @@
         var popup = document.querySelector('.menu');
         var open = document.querySelector('.open_menu');
         popup.style.display = 'none';
-    
+
         open.addEventListener('click', function() {
         if(popup.style.display == 'none') popup.style.display = 'block';
         else popup.style.display = 'none'});}

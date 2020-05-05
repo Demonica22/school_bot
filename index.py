@@ -1,26 +1,25 @@
+import datetime
+import hashlib
+import os
 import uuid
 
 from flask import Flask, redirect, render_template, request, send_from_directory
-from werkzeug.utils import secure_filename
-from flask_login.utils import login_user, login_required, logout_user
-from data.db_session import global_init, create_session
-from data.users import Users
 from flask_login import LoginManager, current_user
-from forms.registration_form import RegistrationForm
-from forms.login_form import LoginForm
-from forms.add_news_form import AddNewsForm
-import hashlib
+from flask_login.utils import login_user, login_required, logout_user
 from flask_restful import Api
+
 from api.news_resource import NewsResource, NewsListResource
-from api.schedule_resource import ScheduleResource, ScheduleListResource
 from api.schedule_calls_resource import ScheduleCallsResource, ScheduleCallsListResource
+from api.schedule_resource import ScheduleResource, ScheduleListResource
+from data.db_session import global_init, create_session
 from data.news import News
+from data.roles import Roles
 from data.schedule import Schedule
 from data.schedule_calls import ScheduleCalls
-from data.roles import Roles
-from wtforms.validators import DataRequired
-import datetime
-import os
+from data.users import Users
+from forms.add_news_form import AddNewsForm
+from forms.login_form import LoginForm
+from forms.registration_form import RegistrationForm
 
 app = Flask(__name__)
 api = Api(app)
@@ -369,7 +368,7 @@ def schedule_lessons(grade):
     session = create_session()
     data = session.query(Schedule).filter(Schedule.grade == grade).all()
     data.sort(key=lambda x: LIST_WEEKDAYS.index(x.weekday))
-
+    print(data)
     return render_template('schedule_lessons.html', grade=grade, data=data)
 
 

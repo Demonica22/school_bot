@@ -1,13 +1,5 @@
-#content{
-    display: inline-block;
+#content {
     position: absolute;
-    margin-top: 0%;
     margin-left: 40%;
     margin-right: 30%;
-}
-
-form{
-    margin-left: 15%;
-    margin-right: 20%;
-    align-self: center;
 }
