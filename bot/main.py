@@ -2,9 +2,8 @@ import vk_api
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 import random
 import json
-from bot.settings import TOKEN, COM_ID
+from bot.settings import TOKEN, COM_ID, NEWS_COUNT
 from requests import get
-import time
 
 WEEKDAYS = {"monday": "понедельник", "tuesday": "вторник", "wednesday": "среда", "thursday": "четверг",
             "friday": "пятница", "saturday": "суббота"}
@@ -12,11 +11,14 @@ vk_session = vk_api.VkApi(
     token=TOKEN)
 longpoll = VkBotLongPoll(vk_session, COM_ID)
 vk = vk_session.get_api()
-action = ""
+# словарь из текущих запросов пользователя ( {user_id: {"action": "action_name","grade":"grade_name"}} )
 cur_requests = {}
 
 
 def send_weekdays():
+    """
+        Функция отправки меню с днями недели для пользователя ( in-line keyboard)
+        """
     vk.messages.send(user_id=event.obj.message['from_id'],
                      message="Выберите день недели для просмотра расписания",
                      random_id=random.randint(0, 2 ** 64),
@@ -47,6 +49,9 @@ def send_weekdays():
 
 
 def send_menu():
+    """
+    Функция отправки основного меню для пользователя ( in-line keyboard)
+    """
     vk.messages.send(user_id=event.obj.message['from_id'],
                      message="Выберите один из предложенных вариантов дальнейшей работы",
                      random_id=random.randint(0, 2 ** 64),
@@ -63,6 +68,8 @@ def send_menu():
 
 for event in longpoll.listen():
     if event.type == VkBotEventType.MESSAGE_NEW:
+        # Если сообщение отправлено с кнопки клавиатуры бота, т.е существует ключ "payload",
+        # то обрабатываем запрос с помощью него
         if "payload" in event.object["message"]:
             if eval(event.object["message"]["payload"])["command"] == "start":
                 send_menu()
@@ -75,6 +82,8 @@ for event in longpoll.listen():
                 send_weekdays()
                 cur_requests[event.obj.message['from_id']] = {"action": "schedule_calls"}
             elif eval(event.object["message"]["payload"])["command"] == "week_day":
+                # если после отправки дня недели выбрано действие расписания звонков, то класс запрашивать не нужно и
+                # отправка расписания происходит сразу после получения сообщения о дне недели
                 if cur_requests[event.obj.message['from_id']]["action"] == "schedule_calls":
                     cur_requests[event.obj.message['from_id']]["weekday"] = event.object["message"]["text"].strip(
                         "\n").strip().split()
@@ -101,6 +110,9 @@ for event in longpoll.listen():
                         cur_requests[event.obj.message['from_id']] = {}
                         send_menu()
                 else:
+                    # Если же запрос не расписания звонков, то происходит запрос класса у пользователя и день недели
+                    # записывается в словарь с ключем weekday
+
                     if event.obj.message['from_id'] not in cur_requests:
                         cur_requests[event.obj.message['from_id']] = {}
                     cur_requests[event.obj.message['from_id']]["weekday"] = event.object["message"]["text"].strip(
@@ -112,14 +124,21 @@ for event in longpoll.listen():
             elif eval(event.object["message"]["payload"])["command"] == "news":
                 try:
                     news = get('http://127.0.0.1:5000/api/get/news').json()["news"]
-                    for i in range(-3, 0, 1):
-                        message = ""
-                        message += f'{news[i]["title"]}\n'
-                        message += news[i]["data"] + "\n"
+                    if news:
+                        count = min(NEWS_COUNT, len(news))
+                        for i in range(count, 0, 1):
+                            message = ""
+                            message += f'{news[i]["title"]}\n'
+                            message += news[i]["data"] + "\n"
+                            vk.messages.send(user_id=event.obj.message['from_id'],
+                                             message=message,
+                                             random_id=random.randint(0, 2 ** 64))
+                    else:
                         vk.messages.send(user_id=event.obj.message['from_id'],
-                                         message=message,
+                                         message="К сожалению, список новостей пуст",
                                          random_id=random.randint(0, 2 ** 64))
                     send_menu()
+
                 except Exception as x:
                     vk.messages.send(user_id=event.obj.message['from_id'],
                                      message=f"Ошибка {x}\n",
@@ -131,10 +150,11 @@ for event in longpoll.listen():
         else:
             message = event.object["message"]["text"].strip("\n").strip().split()
             if event.obj.message['from_id'] in cur_requests:
-                print(cur_requests)
                 if "action" not in cur_requests[event.obj.message['from_id']]:
                     cur_requests[event.obj.message['from_id']]["action"] = None
                 if cur_requests[event.obj.message['from_id']]["action"] == "schedule":
+                    # Если действие - получение расписания (schedule) то происходит запрос к api и обрабатываются все
+                    # полученные расписания, которые удовлетворяют запросу ( день недели и выбранный класс)
                     if "grade" not in cur_requests[event.obj.message['from_id']]:
                         cur_requests[event.obj.message['from_id']]["grade"] = "".join(message).lower()
                     try:
