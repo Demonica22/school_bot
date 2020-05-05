@@ -12,4 +12,4 @@ class Users(SqlAlchemyBase, UserMixin):
     surname = sqlalchemy.Column(sqlalchemy.String)
     role_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("roles.id"), default=1)
     password = sqlalchemy.Column(sqlalchemy.String)
-    roles = orm.relation('Roles', back_populates='users')
+    roles = orm.relation('Roles', back_populates='users', lazy='subquery')
