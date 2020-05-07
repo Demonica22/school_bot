@@ -284,7 +284,7 @@ def add_schedule():
         errors = check()
         if not errors:
             add_data()
-            return redirect('/schedule/lessons')
+            return redirect('/schedule/lessons/add')
         return render_template('add_schedule_form.html', errors=errors)
 
     return render_template('add_schedule_form.html', errors=None)
@@ -295,18 +295,31 @@ def news():
     session = create_session()
     data = []
     for el in session.query(News).all():
-        data.append(
-            {
-                'id': el.id,
-                'title': el.title,
-                'data': el.data,
-                'date': el.date_post,
-                'images': list(filter(lambda x: x.split('.')[-1] in IMAGES, el.files.split(';'))),
-                'videos': list(filter(lambda x: x.split('.')[-1] in VIDEOS, el.files.split(';'))),
-                'files': list(filter(lambda x: x.split('.')[-1] not in VIDEOS
-                                               and x.split('.')[-1] not in IMAGES, el.files.split(';')))
-            }
-        )
+        try:
+            data.append(
+                {
+                    'id': el.id,
+                    'title': el.title,
+                    'data': el.data,
+                    'date': el.date_post,
+                    'images': list(filter(lambda x: x.split('.')[-1] in IMAGES, el.files.split(';'))),
+                    'videos': list(filter(lambda x: x.split('.')[-1] in VIDEOS, el.files.split(';'))),
+                    'files': list(filter(lambda x: x.split('.')[-1] not in VIDEOS
+                                                   and x.split('.')[-1] not in IMAGES, el.files.split(';')))
+                }
+            )
+        except AttributeError:
+            data.append(
+                {
+                    'id': el.id,
+                    'title': el.title,
+                    'data': el.data,
+                    'date': el.date_post,
+                    'images': [],
+                    'videos': [],
+                    'files': []
+                }
+            )
     return render_template('news.html', data=data, max_index=len(data))
 
 
@@ -356,8 +369,6 @@ def schedule_lessons(grade):
     LIST_WEEKDAYS = [
         'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'
     ]
-    if not current_user.is_authenticated:
-        return redirect('/login')
     session = create_session()
     data = session.query(Schedule).filter(Schedule.grade == grade).all()
     data.sort(key=lambda x: LIST_WEEKDAYS.index(x.weekday))
@@ -400,7 +411,7 @@ def add_schedule_calls():
         return errors
 
     if not current_user.is_authenticated or current_user.roles.name != 'admin':
-        return redirect('/schedule/calls')
+        return redirect('/schedule/calls/add')
 
     list_weekdays = [
         ('понедельник', 'monday'), ('вторник', 'tuesday'), ('среда', 'wednesday'), ('четверг', 'thursday'),
@@ -545,7 +556,6 @@ def send_recovery_code(email):
         toaddr = email
 
         code = ''.join([str(random.randint(0, 9)) for i in range(6)])
-
         server = smtplib.SMTP(url, 587)
         server.starttls()
         server.login(login, password)
