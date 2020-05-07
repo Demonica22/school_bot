@@ -5,9 +5,9 @@
 
 Сергеев Данил
 # Основные реализации:
-Для запуска бота используется файл main.py (school_bot/bot/main.py).
+Для запуска бота используется файл main.py ([school_bot/bot/main.py](https://github.com/Demonica22/school_bot/blob/master/bot/main.py)).
 
-Для запуска приложения flask используется файл index.py (school_bot/index.py).
+Для запуска приложения flask используется файл index.py ([school_bot/index.py](https://github.com/Demonica22/school_bot/blob/master/index.py)).
 ## Бот:
 В папке bot, хранится файл settings.py, в котором вы можете настроить сообщество, в котором будет работать бот, так же количество новостей, которые будут отправляться ботом по запросу пользователя.
 Работа с ботом начинается с главного меню с тремя кнопками in-line клавиатуры: Расписание, Расписание звонков и Новости.
