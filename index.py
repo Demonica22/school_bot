@@ -1,25 +1,30 @@
-import datetime
-import hashlib
-import os
 import uuid
 
 from flask import Flask, redirect, render_template, request, send_from_directory
-from flask_login import LoginManager, current_user
+from werkzeug.utils import secure_filename
 from flask_login.utils import login_user, login_required, logout_user
-from flask_restful import Api
-
-from api.news_resource import NewsResource, NewsListResource
-from api.schedule_calls_resource import ScheduleCallsResource, ScheduleCallsListResource
-from api.schedule_resource import ScheduleResource, ScheduleListResource
 from data.db_session import global_init, create_session
+from data.users import Users
+from flask_login import LoginManager, current_user
+from forms.registration_form import RegistrationForm
+from forms.login_form import LoginForm
+from forms.add_news_form import AddNewsForm
+import hashlib
+from flask_restful import Api
+from api.news_resource import NewsResource, NewsListResource
+from api.schedule_resource import ScheduleResource, ScheduleListResource
+from api.schedule_calls_resource import ScheduleCallsResource, ScheduleCallsListResource
 from data.news import News
-from data.roles import Roles
 from data.schedule import Schedule
 from data.schedule_calls import ScheduleCalls
-from data.users import Users
-from forms.add_news_form import AddNewsForm
-from forms.login_form import LoginForm
-from forms.registration_form import RegistrationForm
+from data.roles import Roles
+from wtforms.validators import DataRequired
+import datetime
+import os
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import random
 
 app = Flask(__name__)
 api = Api(app)
@@ -68,6 +73,11 @@ def logout():
 
 @app.route('/')
 def start():
+    return redirect('/main')
+
+
+@app.route('/main')
+def main():
     return redirect('/news')
 
 
@@ -114,8 +124,7 @@ def registration():
 def login():
     def check_login(form):
         session = create_session()
-        if not session.query(Users).filter(Users.email == form.login_or_nickname.data).first() \
-                and not session.query(Users).filter(Users.email == form.email.data).first():
+        if not session.query(Users).filter(Users.email == form.email.data).first():
             return 'Нет такого email'
         else:
             return 'Неправильный пароль'
@@ -180,7 +189,6 @@ def add_news():
         news = add_data(form, News())
         session.add(news)
         session.commit()
-        return redirect("/")
 
     return render_template('add_news_form.html', form=form, data=None)
 
@@ -220,10 +228,6 @@ def delete_news(id):
         return redirect('/')
 
     session = create_session()
-    new = session.query(News).filter(News.id == id).first()
-    if new.files:
-        for file in new.files.split(";"):
-            os.remove(f"uploads/{file}")
     session.query(News).filter(News.id == id).delete()
     session.commit()
 
@@ -291,31 +295,18 @@ def news():
     session = create_session()
     data = []
     for el in session.query(News).all():
-        try:
-            data.append(
-                {
-                    'id': el.id,
-                    'title': el.title,
-                    'data': el.data,
-                    'date': el.date_post,
-                    'images': list(filter(lambda x: x.split('.')[-1] in IMAGES, el.files.split(';'))),
-                    'videos': list(filter(lambda x: x.split('.')[-1] in VIDEOS, el.files.split(';'))),
-                    'files': list(filter(lambda x: x.split('.')[-1] not in VIDEOS
-                                                   and x.split('.')[-1] not in IMAGES, el.files.split(';')))
-                }
-            )
-        except AttributeError:
-            data.append(
-                {
-                    'id': el.id,
-                    'title': el.title,
-                    'data': el.data,
-                    'date': el.date_post,
-                    'images': [],
-                    'videos': [],
-                    'files': []
-                }
-            )
+        data.append(
+            {
+                'id': el.id,
+                'title': el.title,
+                'data': el.data,
+                'date': el.date_post,
+                'images': list(filter(lambda x: x.split('.')[-1] in IMAGES, el.files.split(';'))),
+                'videos': list(filter(lambda x: x.split('.')[-1] in VIDEOS, el.files.split(';'))),
+                'files': list(filter(lambda x: x.split('.')[-1] not in VIDEOS
+                                               and x.split('.')[-1] not in IMAGES, el.files.split(';')))
+            }
+        )
     return render_template('news.html', data=data, max_index=len(data))
 
 
@@ -365,10 +356,12 @@ def schedule_lessons(grade):
     LIST_WEEKDAYS = [
         'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'
     ]
+    if not current_user.is_authenticated:
+        return redirect('/login')
     session = create_session()
     data = session.query(Schedule).filter(Schedule.grade == grade).all()
     data.sort(key=lambda x: LIST_WEEKDAYS.index(x.weekday))
-    print(data)
+
     return render_template('schedule_lessons.html', grade=grade, data=data)
 
 
@@ -521,6 +514,93 @@ def delete_user(id):
     session.query(Users).filter(Users.id == id).delete()
     session.commit()
     return redirect('/users')
+
+
+@app.route('/account/recovery', methods=['GET', 'POST'])
+def recovery_account():
+    session = create_session()
+
+    def check(email):
+        errors = {}
+        if not session.query(Users).filter(Users.email == email).first():
+            errors['email'] = 'Нет пользователя с таким Email'
+        return errors
+
+    if request.method == 'POST':
+        email = request.form['email']
+        if not check(email):
+            return redirect(f'/send/code/{email}')
+
+        return render_template('recovery_account.html', errors=check(request.form['email']), mode='email')
+
+    return render_template('recovery_account.html', errors=None, mode='email')
+
+
+@app.route('/send/code/<string:email>')
+def send_recovery_code(email):
+    try:
+        login = "school.bot.1234@gmail.com"
+        password = "school_bot_228"
+        url = 'smtp.gmail.com'
+        toaddr = email
+
+        code = ''.join([str(random.randint(0, 9)) for i in range(6)])
+
+        server = smtplib.SMTP(url, 587)
+        server.starttls()
+        server.login(login, password)
+        server.sendmail(login, toaddr, code)
+        code = hashlib.sha1(bytes(code, 'utf-8')).hexdigest()
+        return redirect(f'/account/recovery/{email}/{code}')
+    except BaseException:
+        return redirect('/news')
+
+
+@app.route('/account/recovery/<string:email>/<string:code>', methods=['GET', 'POST'])
+def recovery_account_code(email, code):
+    def check(code, form_code):
+        errors = {}
+        if not form_code:
+            errors['code'] = 'Код не был введен.'
+        if hashlib.sha1(bytes(form_code, 'utf-8')).hexdigest() != str(code):
+            errors['code'] = 'Неправильный код.'
+        return errors
+
+    if request.method == 'POST':
+        if not check(code, request.form['code']):
+            return redirect(f'/account/recovery/{email}/password/{code}')
+
+        return render_template('recovery_account.html', errors=check(code, request.form['code']), mode='code',
+                               email=email)
+
+    return render_template('recovery_account.html', errors=None, mode='code', email=email)
+
+
+@app.route('/account/recovery/<string:email>/password/<string:code>', methods=['GET', 'POST'])
+def recovery_account_edit_password(email, code):
+    session = create_session()
+
+    def check(password, repeat_password):
+        errors = {}
+        if password != repeat_password:
+            errors['password'] = 'Пароли не свопадают'
+        if not password:
+            errors['password'] = 'Поле не должно быть пустым'
+        if not repeat_password:
+            errors['password'] = 'Поле не должно быть пустым'
+
+    def edit_password():
+        session.query(Users).filter(Users.email == email).first().password = hash_password(request.form['password'])
+        session.commit()
+
+    if request.method == 'POST':
+        if not check(request.form['password'], request.form['repeat_password']):
+            edit_password()
+            return redirect('/login')
+
+        return render_template('password.html', errors=check(request.form['password'], request.form['repeat_password']))
+
+    return render_template('password.html', errors=None)
 
 
 if __name__ == '__main__':

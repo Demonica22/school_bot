@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+    <link rel="stylesheet" href="/static/css/recovery_account.css">
+    <div id="content">
+        {% if mode == "email" %}
+            <h1>
+                Введите электронную почту
+            </h1>
+            <form action="" method="POST">
+                <p>
+                    <input type="email" name="email"> <br>
+                    {% if errors['email'] %}
+                        <div class="alert alert-danger" role="alert">
+                            {{errors['email']}}
+                        </div>
+                    {% endif %}
+                </p>
+                <p>
+                    <input type="submit" class="btn btn-primary"value="">
+                </p>
+            </form>
+        {% elif mode == "code"%}
+            <form action="" method="POST">
+                <p>
+                    <input type="text" name="code">
+                    {% if errors['code'] %}
+                        <div class="alert alert-danger" role="alert">
+                            {{errors['code']}}
+                        </div>
+                    {% endif %}
+                </p>
+               <p>
+                   <input type="submit" class="btn btn-primary"value="">
+               </p>
+            </form>
+            <a href="/send/code/{{email}}"></a>
+        {% endif %}
+    </div>
+{% endblock %}
