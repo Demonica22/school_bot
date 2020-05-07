@@ -1,9 +1,9 @@
 # School Bot
 -------------------------------------------------
 # Авторы проекта:
-Семейкин Семён
+[Семейкин Семён](https://github.com/Demonica22)
 
-Сергеев Данил
+[Сергеев Данил](https://github.com/painwall)
 # Основные реализации:
 Для запуска бота используется файл main.py ([school_bot/bot/main.py](https://github.com/Demonica22/school_bot/blob/master/bot/main.py)).
 
