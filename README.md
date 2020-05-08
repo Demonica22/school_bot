@@ -54,6 +54,8 @@
 
 •	json (Python библиотека)
 
+•stmp (Python библиотека)
+
 •	request (Python библиотека)
 
 •	HTML 
