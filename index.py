@@ -186,7 +186,7 @@ def add_news():
         news = add_data(form, News())
         session.add(news)
         session.commit()
-
+        return redirect('/')
     return render_template('add_news_form.html', form=form, data=None)
 
 
@@ -200,14 +200,16 @@ def edit_news(id):
 
     form = AddNewsForm()
     form.hidden_tag()
-
-    session = create_session()
-    news = session.query(News).filter(News.id == id).first()
-    form.data.data = news.data
-    files = news.files
+    if request.method == "GET":
+        session = create_session()
+        news = session.query(News).filter(News.id == id).first()
+        form.data.data = news.data
+        files = news.files
 
     if form.validate_on_submit():
-        news = add_data(form, news)
+        session = create_session()
+        new = session.query(News).filter(News.id == id).first()
+        news = add_data(form, new)
         if news.files == '':
             news.files = files
         session.commit()
@@ -227,7 +229,7 @@ def delete_news(id):
     session = create_session()
     session.query(News).filter(News.id == id).delete()
     new = session.query(News).filter(News.id == id).first()
-    if new.files:
+    if new and new.files:
         for file in new.files.split(";"):
             os.remove(f"uploads/{file}")
     session.commit()
