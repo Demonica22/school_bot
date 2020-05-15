@@ -242,9 +242,9 @@ def add_schedule():
     session = create_session()
 
     def add_data():
-        schedule = session.query(Schedule).filter(Schedule.weekday == request.form['weekday'],
+        schedule = session.query(Schedule).filter(Schedule.weekday == request.form['weekday'].lower(),
                                                   Schedule.grade == (request.form['number_grade'] + request.form[
-                                                      'letter_grade'])).first()
+                                                      'letter_grade']).lower()).first()
         flag = True
         if not schedule:
             flag = False
@@ -429,7 +429,6 @@ def add_schedule_calls():
     if request.method == 'POST':
         if validate():
             return render_template('add_and_edit_schedule_calls.html', weekdays=list_weekdays, errors=validate())
-        print(list(request.form.items()))
         for form in list(request.form.items()):
             if form[0] in list_weekdays_english:
                 schedulecalls = session.query(ScheduleCalls).filter(
@@ -465,7 +464,6 @@ def edit_schedule_calls(id):
 
     session = create_session()
     data = session.query(ScheduleCalls).filter(ScheduleCalls.id == id).first()
-    print(data.schedule)
     if request.method == 'POST':
         if check():
             return render_template('add_and_edit_schedule_calls.html', errors=check(), data=data.schedule)
@@ -484,6 +482,16 @@ def delete_schedule_calls(id):
     session.query(ScheduleCalls).filter(ScheduleCalls.id == id).delete()
     session.commit()
     return redirect('/schedule/calls')
+
+
+@app.route('/schedule/lessons/delete/<string:grade>/<string:weekday>')
+def delete_schedule_lessons(grade, weekday):
+    if not current_user.is_authenticated or current_user.roles.name != 'admin':
+        return redirect('/schedule/lessons')
+    session = create_session()
+    session.query(Schedule).filter(Schedule.grade == grade, Schedule.weekday == weekday).delete()
+    session.commit()
+    return redirect('/schedule/lessons')
 
 
 @app.route('/users')
@@ -513,7 +521,6 @@ def edit_role(id):
 
     if request.method == 'POST':
         id = session.query(Roles).filter(Roles.name == request.form['select_role']).first().id
-        print(id)
 
         user.role_id = id
         session.commit()
